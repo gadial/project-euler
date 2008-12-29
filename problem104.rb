@@ -5,27 +5,18 @@
 # It turns out that F_(541), which contains 113 digits, is the first Fibonacci number for which the last nine digits are 1-9 pandigital (contain all the digits 1 to 9, but not necessarily in order). And F_(2749), which contains 575 digits, is the first Fibonacci number for which the first nine digits are 1-9 pandigital.
 # 
 # Given that F_(k) is the first Fibonacci number for which the first nine digits AND the last nine digits are 1-9 pandigital, find k.
-require 'common'
-class Integer
-    def first_pandigital?
-    	digits[0..8].sort == (1..9).to_a
-    end
-    def last_pandigital?
-	digits.length >= 9 and digits[-9..-1].sort == (1..9).to_a
-    end
-end
 
-def each_fibonacci
-	x = 1
-	y = 1
-	n = 3
-	yield(x,1)
-	yield(y,2)
-	while true
-		x, y = y, x+y
-		yield(y,n)
-		n += 1
-	end
-end
+#It suffices to find which of the Fibonacci numbers are last pandigital; it's much easier to find them since we are only interested in the first 9 digits
+#When we find a last pandigital number, we calculate the "real" number via the direct formula, and check if it is first pandigital as well
+#Since we're only interested in the first nine digits, we don't need the direct calculation to be precise
 
-each_fibonacci {|f,n| puts n; break if f.first_pandigital? and f.last_pandigital?}
+x, real_x = 1, 1
+y, real_y = 1, 1
+n = 3
+while true
+    puts n    
+    x, y = y, (x+y)%10**9
+    real_x, real_y = real_y, real_x + real_y
+    break if y.last_pandigital? and real_y.first_pandigital?
+    n += 1
+end

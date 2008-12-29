@@ -1,4 +1,4 @@
-# $Primes = File.open("primes.txt","r"){|file| file.read.split(",").collect{|p| p.to_i}}
+$Primes = File.open("primes.txt","r"){|file| file.read.split(",").collect{|p| p.to_i}}
 def fast_modular_exponent(a,k,n)
 	#computes a^k modulo n
 	x=1
@@ -271,7 +271,7 @@ end
 #Combinatorics section:
 
 def choose(n,k)
-	(0...k).inject(1){|prod, i| prod*(n-i).to_f / (k-i)}.to_s.to_i
+	(1..k).inject(1){|prod, i| prod*(n-i+1) / (i)}
 end
 
 def choice_with_repetitions(n,k)
