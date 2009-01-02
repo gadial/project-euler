@@ -12,71 +12,137 @@
 #What is the position of the cursor after 10^(12) steps in D_(50) ?
 #Give your answer in the form x,y with no spaces.
 
-class Traveller
-    def initialize(max_depth, alarm_at)
-        @location = [0,0]
-        @direction = :up     
-        @depth = 0
-        @max_depth = max_depth
-        @steps = 0
-        @alarm_at = alarm_at
-    end  
-    def move
-        case @direction
-        when :up then     @location[1] += 1
-        when :down then   @location[1] -= 1
-        when :right then  @location[0] += 1
-        when :left then   @location[0] -= 1
-        end
-        @steps += 1
-        puts @steps if @steps % 10**6 == 0
-        raise "alarm reached, location = #{@location.inspect}" if @steps == @alarm_at
+#Undoubtly the worst, ugliest piece of code written for this project. It still works.
+
+$Values = {}
+def move(direction, location)
+    case direction
+    when :up then     location[1] += 1
+    when :down then   location[1] -= 1
+    when :right then  location[0] += 1
+    when :left then   location[0] -= 1
     end
-    def turn_left
-        case @direction
-            when :up then     @direction = :left
-            when :down then   @direction = :right
-            when :right then  @direction = :up
-            when :left then   @direction = :down
-        end      
-    end
-    def turn_right
-        case @direction
-            when :up then     @direction = :right
-            when :down then   @direction = :left
-            when :right then  @direction = :down
-            when :left then   @direction = :up
-        end      
-    end
-    def a_movement
-        #aRbFR
-        @depth += 1
-        a_movement unless @depth >= @max_depth
-        turn_right
-        b_movement unless @depth >= @max_depth
-        move
-        turn_right
-        @depth -= 1
-    end
-  def b_movement
-      #LFaLb
-      @depth += 1
-      turn_left
-      move
-      a_movement unless @depth >= @max_depth
-      turn_left
-      b_movement unless @depth >= @max_depth
-      @depth -= 1
-  end
-  def begin_movement
-      #Fa
-      move
-      a_movement
-  end
+end
+def turn_left(direction)
+    case direction
+	when :up then     return :left
+	when :down then   return :right
+	when :right then  return :up
+	when :left then   return :down
+    end      
+end
+def turn_right(direction)
+    case direction
+	when :up then     return :right
+	when :down then   return :left
+	when :right then  return :down
+	when :left then   return :up
+    end      
 end
 
-begin
-    puts Traveller.new(50,10**12).begin_movement
-rescue RuntimeError => info
-    puts info
+def seek(n,steps)
+    def recurse_a(n,steps,location,direction)
+    #    aRbFR	
+	return location if steps == 0
+	if n>0
+	    return recurse_a(n-1,steps,location,direction) if steps <= step_a(n-1,direction)[2]
+	    direction, location_offset, steps_offset = step_a(n-1,direction)
+	    location[0]+=location_offset[0]; location[1]+=location_offset[1]; 
+	    steps -= steps_offset
+	    return location if steps == 0
+	end
+	direction = turn_right(direction)
+	if n>0
+	    return recurse_b(n-1,steps,location,direction) if steps <= step_b(n-1,direction)[2]
+	    direction, location_offset, steps_offset = step_b(n-1,direction)
+	    location[0]+=location_offset[0]; location[1]+=location_offset[1]; 
+	    steps -= steps_offset
+	    return location if steps == 0
+	end
+	move(direction,location)
+	steps -= 1
+	return location if steps == 0
+	direction = turn_right(direction)
+	raise "very strange"	
+    end
+    
+    def recurse_b(n,steps,location,direction)
+    #    LFaLb
+	return location if steps == 0
+	direction = turn_left(direction)
+	move(direction,location)
+	steps -= 1
+	return location if steps == 0
+	if n>0
+	    return recurse_a(n-1,steps,location,direction) if steps <= step_a(n-1,direction)[2]
+	    direction, location_offset, steps_offset = step_a(n-1,direction)
+	    location[0]+=location_offset[0]; location[1]+=location_offset[1]; 
+	    steps -= steps_offset
+	    return location if steps == 0
+	end
+	direction = turn_left(direction)
+	return recurse_b(n-1,steps,location,direction) if n>0 and steps <= step_b(n-1,direction)[2]
+	return location if steps == 0
+	raise "very strange"	
+    end
+    
+    location = [0,1]
+    steps -= 1
+    direction = :up
+    recurse_a(n,steps,location,direction)
 end
+
+def step_a(n, direction)
+#    aRbFR
+    return $Values[[:a,n,direction]] unless $Values[[:a,n,direction]] == nil
+    old_direction = direction
+    location = [0,0]
+    if n == 0
+	direction = turn_right(direction)
+	move(direction,location)
+	direction = turn_right(direction)
+	$Values[[:a,n,old_direction]] = [direction,location.dup,1]
+	return [direction,location.dup,1]
+    end
+    # n > 0
+    direction, offset, steps = step_a(n-1,direction)
+    location[0] += offset[0]; location[1] += offset[1]
+    direction = turn_right(direction)
+    direction, offset, more_steps = step_b(n-1,direction)
+    steps += more_steps
+    location[0] += offset[0]; location[1] += offset[1]
+    move(direction,location)
+    steps += 1
+    direction = turn_right(direction)
+    $Values[[:a,n,old_direction]] = [direction,location.dup,steps]
+    return [direction,location.dup,steps]
+end
+
+def step_b(n, direction)
+#    LFaLb
+    old_direction = direction
+    location = [0,0]
+    return $Values[[:b,n,direction]] unless $Values[[:b,n,direction]] == nil
+    if n == 0
+	direction = turn_left(direction)
+	move(direction,location)
+	direction = turn_left(direction)
+	$Values[[:b,n,old_direction]] = [direction,location.dup,1]
+	return [direction,location.dup,1]
+    end
+    # n > 0
+    direction = turn_left(direction)
+    move(direction,location)
+    steps = 1
+    direction, offset, more_steps = step_a(n-1,direction)
+    steps += more_steps
+    location[0] += offset[0]; location[1] += offset[1]
+    direction = turn_left(direction)
+    direction, offset, more_steps = step_b(n-1,direction)
+    steps += more_steps
+    location[0] += offset[0]; location[1] += offset[1]
+    $Values[[:b,n,old_direction]] = [direction,location.dup,steps]
+    return [direction,location.dup,steps]
+end
+
+puts seek(50,10**12).inspect

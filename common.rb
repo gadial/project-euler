@@ -1,4 +1,4 @@
-$Primes = File.open("primes.txt","r"){|file| file.read.split(",").collect{|p| p.to_i}}
+# $Primes = File.open("primes.txt","r"){|file| file.read.split(",").collect{|p| p.to_i}}
 def fast_modular_exponent(a,k,n)
 	#computes a^k modulo n
 	x=1

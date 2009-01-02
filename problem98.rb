@@ -6,43 +6,52 @@
 # 
 # NOTE: All anagrams formed must be contained in the given text file.
 require 'common'
+# $Perms = (0..9).to_a.all_choices_without_repetitions(7)
 
 class String
 	def letters
 		split("").uniq.sort
 	end
-	def replace_by(source, destination)
-		raise "source length != destination length" if source.length != destination.length
-		
+	def to_num(dict)
+	    split("").collect{|l| dict[l]}.join("").to_i
+	end
+	def replacement_is_ok?(dict)
+	    dict[self[0..0]] != 0
+	end
+	def anagram?(rhs)
+	    self.split("").sort == rhs.split("").sort
 	end
 end
 
-# words = File.open("words.txt", "r"){|file| file.read.split(",").collect{|s| s.delete("\"")}}
-# 
-# pairs = []
-# 
-# words.each_index do |i|
-# 	puts i
-# 	for j in (i+1...words.length)
-# 		pairs << [words[i], words[j]] if words[i].letters == words[j].letters
-# 	end
-# end
-# 
-# puts pairs.inspect
-# puts words.sort{|a,b| a.length <=> b.length}.inspect
-def good_anagrams_for(pair)
-	letters = pair.first.letters
-	
-	choices = (0..9).to_a.all_choices_without_repetitions
+def find_max_for_pair(a,b)
+    max = 0
+    letters = a.letters
+    (0..9).to_a.all_choices_without_repetitions(letters.length).each do |r|
+	dict = {}
+	r.each_index{|i| dict[letters[i]] = r[i]}
+	if a.replacement_is_ok?(dict) and b.replacement_is_ok?(dict) 
+	    x = a.to_num(dict)
+	    y = b.to_num(dict)
+	    max = [x,y,max].max if x.square? and y.square?
+	end
+    end
+    return max
 end
 
-interesting_pairs = [["ABILITY", "LIABILITY"], ["ACCESS", "CASE"], ["ACCIDENT", "CANDIDATE"], ["ACCIDENT", "INDICATE"], ["ACCOMPANY", "COMPANY"], ["ACT", "CAT"], ["ACTION", "CONTAIN"], ["AFFAIR", "FAIR"], ["AGAIN", "GAIN"], ["AGREEMENT", "ARRANGEMENT"], ["AHEAD", "HEAD"], ["AIRCRAFT", "TRAFFIC"], ["APART", "PART"], ["APPARENT", "PARENT"], ["APPARENT", "PARTNER"], ["APPARENT", "PATTERN"], ["APPEAR", "PAPER"], ["APPEAR", "PREPARE"], ["APPLY", "PLAY"], ["AREA", "EAR"], ["AREA", "RARE"], ["ARISE", "RAISE"], ["ARMY", "MARRY"], ["ARRANGE", "RANGE"], ["ASSESS", "SEA"], ["ASSESSMENT", "STATEMENT"], ["ASSET", "EAST"], ["ASSET", "ESTATE"], ["ASSET", "SEAT"], ["ASSET", "STATE"], ["ATTACH", "CATCH"], ["AWARD", "DRAW"], ["AWARE", "WEAR"], ["AWAY", "WAY"], ["BATTLE", "TABLE"], ["BEGIN", "BEGINNING"], ["BOARD", "BROAD"], ["CANDIDATE", "INDICATE"], ["CARE", "CAREER"], ["CARE", "RACE"], ["CAREER", "RACE"], ["CENTRE", "RECENT"], ["CHARACTER", "TEACHER"], ["CLEAR", "RECALL"], ["COAL", "LOCAL"], ["COLLECTION", "ELECTION"], ["CONCENTRATION", "CREATION"], ["CONCENTRATION", "REACTION"], ["CONCERN", "CORNER"], ["CONNECT", "CONTENT"], ["CONNECTION", "NOTICE"], ["CONSERVATIVE", "CONVERSATION"], ["CONSTRUCTION", "INSTRUCTION"], ["COURSE", "RESOURCE"], ["COURSE", "SOURCE"], ["COVER", "RECOVER"], ["CREATION", "REACTION"], ["CREDIT", "DIRECT"], ["DANGER", "GARDEN"], ["DEAL", "LEAD"], ["DERIVE", "DRIVE"], ["DERIVE", "DRIVER"], ["DETAIL", "DETAILED"], ["DO", "ODD"], ["DOG", "GOD"], ["DOG", "GOOD"], ["DRIVE", "DRIVER"], ["EAR", "RARE"], ["EARLY", "REALLY"], ["EARN", "NEAR"], ["EARTH", "HEART"], ["EARTH", "RATHER"], ["EARTH", "THEATRE"], ["EARTH", "THREAT"], ["EAST", "ESTATE"], ["EAST", "SEAT"], ["EAST", "STATE"], ["EAT", "TEA"], ["ECONOMIC", "INCOME"], ["EITHER", "THEIR"], ["ELSE", "LESS"], ["ELSE", "SELL"], ["EMPLOY", "EMPLOYEE"], ["END", "NEED"], ["ENSURE", "NURSE"], ["ESCAPE", "SPACE"], ["ESTATE", "SEAT"], ["ESTATE", "STATE"], ["EVERY", "VERY"], ["EXCEPT", "EXPECT"], ["EXTENT", "NEXT"], ["FAST", "STAFF"], ["FILE", "LIFE"], ["FLOW", "FOLLOW"], ["FOR", "ROOF"], ["FORM", "FROM"], ["FORMER", "REFORM"], ["FREE", "REFER"], ["GOD", "GOOD"], ["GREAT", "TARGET"], ["GUEST", "SUGGEST"], ["HATE", "HEAT"], ["HEART", "RATHER"], ["HEART", "THEATRE"], ["HEART", "THREAT"], ["HER", "HERE"], ["HOT", "TOOTH"], ["HOW", "WHO"], ["HURT", "TRUTH"], ["IGNORE", "REGION"], ["IMAGINE", "MEANING"], ["INTERNATIONAL", "RELATION"], ["INTERPRETATION", "OPERATION"], ["INTO", "NOTION"], ["INTRODUCE", "REDUCTION"], ["ITEM", "TIME"], ["ITS", "SIT"], ["LATER", "LATTER"], ["LATER", "RELATE"], ["LATTER", "RELATE"], ["LAW", "WALL"], ["LEAST", "STEAL"], ["LESS", "SELL"], ["LET", "TELL"], ["LIST", "STILL"], ["LITTLE", "TITLE"], ["LOT", "TOOL"], ["MALE", "MEAL"], ["MEAN", "NAME"], ["MEMBER", "REMEMBER"], ["NIGHT", "THING"], ["NO", "ON"], ["NOISE", "SESSION"], ["NONE", "ONE"], ["NOT", "ONTO"], ["NOTE", "TONE"], ["NOTHING", "TONIGHT"], ["NOW", "OWN"], ["OF", "OFF"], ["OPPOSITION", "POSITION"], ["OPTION", "POINT"], ["OUGHT", "THOUGH"], ["OUGHT", "THOUGHT"], ["PAPER", "PREPARE"], ["PARENT", "PARTNER"], ["PARENT", "PATTERN"], ["PARTNER", "PATTERN"], ["PERSON", "RESPONSE"], ["PHASE", "SHAPE"], ["POST", "SPOT"], ["POST", "STOP"], ["PRESENT", "REPRESENT"], ["PROCEDURE", "PRODUCE"], ["PROVIDE", "PROVIDED"], ["QUIET", "QUITE"], ["RATE", "TEAR"], ["RATE", "TREAT"], ["RATHER", "THEATRE"], ["RATHER", "THREAT"], ["READ", "READER"], ["REFUSE", "SUFFER"], ["RESEARCH", "SEARCH"], ["RESOURCE", "SOURCE"], ["REST", "STREET"], ["RISE", "SERIES"], ["SCIENCE", "SINCE"], ["SEAT", "STATE"], ["SERVE", "SEVERE"], ["SET", "TEST"], ["SHEET", "THESE"], ["SHOOT", "SHOT"], ["SHOUT", "SOUTH"], ["SHUT", "THUS"], ["SIGN", "SING"], ["SON", "SOON"], ["SPOT", "STOP"], ["STAR", "START"], ["SURE", "USER"], ["TEAR", "TREAT"], ["THEATRE", "THREAT"], ["THEM", "THEME"], ["THOUGH", "THOUGHT"], ["THROUGH", "THROUGHOUT"], ["THROW", "WORTH"], ["TO", "TOO"], ["WRITE", "WRITER"]]
-interesting_pairs.sort! {|a,b| b.collect{|x| x.length}.max <=> a.collect{|x| x.length}.max}
+# words = File.open("words.txt", "r"){|file| file.read.split(",").collect{|s| s.delete("\"")}}
 
-# puts interesting_pairs.first
+# anagrams = []
+# while not words.empty?
+#     puts words.length
+#     temp_word = words.shift
+#     matches = words.find_all{|word| temp_word.anagram?(word)}
+#     anagrams += matches.collect{|word| [temp_word, word]}
+# end
+# 
+# puts anagrams.inspect
 
+anagarms = [["ACT", "CAT"], ["ARISE", "RAISE"], ["BOARD", "BROAD"], ["CARE", "RACE"], ["CENTRE", "RECENT"], ["COURSE", "SOURCE"], ["CREATION", "REACTION"], ["CREDIT", "DIRECT"], ["DANGER", "GARDEN"], ["DEAL", "LEAD"], ["DOG", "GOD"], ["EARN", "NEAR"], ["EARTH", "HEART"], ["EAST", "SEAT"], ["EAT", "TEA"], ["EXCEPT", "EXPECT"], ["FILE", "LIFE"], ["FORM", "FROM"], ["FORMER", "REFORM"], ["HATE", "HEAT"], ["HOW", "WHO"], ["IGNORE", "REGION"], ["INTRODUCE", "REDUCTION"], ["ITEM", "TIME"], ["ITS", "SIT"], ["LEAST", "STEAL"], ["MALE", "MEAL"], ["MEAN", "NAME"], ["NIGHT", "THING"], ["NO", "ON"], ["NOTE", "TONE"], ["NOW", "OWN"], ["PHASE", "SHAPE"], ["POST", "SPOT"], ["POST", "STOP"], ["QUIET", "QUITE"], ["RATE", "TEAR"], ["SHEET", "THESE"], ["SHOUT", "SOUTH"], ["SHUT", "THUS"], ["SIGN", "SING"], ["SPOT", "STOP"], ["SURE", "USER"], ["THROW", "WORTH"]]
+# puts anagarms.length
 
-
-# puts interesting_pairs.length
-
-
+# puts anagarms.collect{|pair| puts pair.inspect; t = find_max_for_pair(pair.first, pair.last); puts t; t}.max
+puts anagarms.collect{|pair| puts pair.inspect; find_max_for_pair(pair.first, pair.last)}.max
