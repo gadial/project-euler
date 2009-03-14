@@ -74,6 +74,9 @@ class Frac
 		other = Frac.new(other,1) if Integer === other
 		self.numerator*other.denominator <=> self.denominator*other.numerator		
 	end
+	def ** (exp)
+	    Frac.new(numerator**exp, denominator**exp)
+	end
 	def reciprocal
 		Frac.new(self.denominator, self.numerator)
 	end
@@ -89,5 +92,12 @@ class Frac
 			when Integer: return [Frac.new(other), self]
 			else raise "don't know how to coerce object of class #{other.class}"
 		end
+	end
+	def eql?(rhs)
+	    self == rhs
+	end
+	def hash
+	    n = self.numerator + self.denominator - 2
+	    (n*(n+1)) / 2 + self.denominator
 	end
 end

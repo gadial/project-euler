@@ -12,20 +12,20 @@
 # 
 # NOTE: Once the chain starts the terms are allowed to go above one million.
 
-class Array
-	def max_index
-		index(self.max)		
-	end
-end
+#Standard dynamic programming
 
-class Integer
-	def collatz_chain
-		chain = [self]
-		while chain.last != 1
- 			chain << ((chain.last % 2 == 0)?(chain.last / 2):(1+chain.last*3))
-		end
-		return chain
-	end
+$Values = {}
+def collatz(n)
+  return $Values[n] unless $Values[n] == nil
+  if n == 1
+      result = 1
+  else
+      case n % 2
+          when 0 then result = collatz(n / 2) + 1 
+          when 1 then result = collatz(3*n + 1) + 1
+      end    
+  end
+  $Values[n] = result
+  return result
 end
-
-puts ((1...10**6).collect{|x| x.collatz_chain.size}.max_index)+1
+puts ((1...10**6).collect{|x| puts x; collatz(x)}.max_index)+1

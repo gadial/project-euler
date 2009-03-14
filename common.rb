@@ -1,4 +1,26 @@
-# $Primes = File.open("primes.txt","r"){|file| file.read.split(",").collect{|p| p.to_i}}
+# $Primes = File.open("primes.txt","r"){|file| file.read.split("\n").collect{|p| p.to_i}}
+
+def solve_equation(a,b,c)
+	(-b + (b**2 - 4*a*c).sqrt) / (2*a)
+end
+
+def compute_jacobi_symbol(a,b)
+#     puts "(#{a}/#{b})"
+    raise "b=#{b} must be odd" unless b.odd?
+    return 1 if a == 1
+    return 1 if b == 1
+    return compute_jacobi_symbol(-a,b)*((b % 4 == 1)?(1):(-1)) if a < 0
+    return compute_jacobi_symbol(a % b, b) if a > b
+    temp = 1
+    while a % 2 == 0
+	a /= 2
+	temp *= (([1,7].include?(b % 8))?(1):(-1))
+    end
+    return temp if a == 1
+    temp *= ((a % 4 == 1 or b % 4 == 1)?(1):(-1)) # quadratic reciprocity
+    return temp * compute_jacobi_symbol(b % a, a)
+end
+
 def fast_modular_exponent(a,k,n)
 	#computes a^k modulo n
 	x=1
@@ -28,6 +50,9 @@ class Array
 	end
 	def exists?
 	  not find_all{|x| yield(x)}.empty?
+	end
+	def all_uniq?
+	    self.uniq.length == self.length
 	end
 	def expand(size, front=false)
 		return self.dup if self.size >= size
@@ -78,6 +103,9 @@ class Array
 	def all_subsets
 	    (0...(2**self.length)).collect{|n| choose_by_binary_vector(n.to_s_padded(2,self.length).split("").collect{|s| s.to_i})}
 	end
+	def count(&proc)
+		find_all(&proc).length
+	end
 end
 
 class Integer
@@ -91,6 +119,9 @@ class Integer
 	
 	def digits(base=10)
 		self.to_s(base).split("").collect{|x| x.to_i(base)}
+	end
+	def number_of_digits(base = 10)
+	    self.to_s(base).length
 	end
 	def sum_of_digits(base=10)
 		digits(base).sum
@@ -113,8 +144,10 @@ class Integer
 		temp = self
 		result = []
 		i=0
+		p = 2
 		while temp > 1
-			p=$Primes[i]
+# 			p=$Primes[i]
+			p = (p..temp).find{|x| temp % x == 0}
 			while temp % p == 0
 				result << p
 				temp /= p
@@ -125,6 +158,11 @@ class Integer
 	end
 	def factorial
 		(2..self).inject(1){|prod, x| prod*x}
+	end
+	def to_s_factored
+		return "1" if self == 1
+		p = prime_divisors
+		p.uniq.collect{|x| "(#{x}^#{p.count{|t| t==x}})"}.join("*")
 	end
 	def sqrt(epsilon=0.000001)
 		#basic newton-raphson
@@ -171,21 +209,35 @@ class Integer
  		20.times {t = rand(p-2)+2; if not t.qr_modulo?(p) then non_qr = t; break end}
 		raise "could not find a non quadratic residue modulo #{p}" if non_qr == nil
 
-		#now writing p-1 as p-1=2^alpha*s where s is odd
-		alpha = 0
+		#now writing p-1 as p-1=2^k*t where t is odd
+		k = 0
 		temp = p-1
 		while temp % 2 == 0
-			alpha += 1
+			k += 1
 			temp /= 2
 		end
-		s = temp
-
-		# r is "almost" the sqrt of self
-		r = fast_modular_exponent(self, (s+1 / 2), p)
-		r_a_ratio = (r**2 * self.inverse_modulo(p)) % p
-		j = 0 #j will be the power of b in sqrt(a) = r*b^j
-		(alpha-1).times do |k|
+		t = temp
+		z = fast_modular_exponent(non_qr, t, p)
+		#finished the "pre-processing", turning to deal with self
+# 		puts "p=#{p}, p-1 = 2^#{k}*#{t}"
+		
+		y = fast_modular_exponent(self, t, p)
+		x = fast_modular_exponent(self, (t+1) / 2, p)
+		
+# 		puts "self = #{self}, y = #{y}, x = #{x}"
+		(0..k-1).each do |i|
+		    b = fast_modular_exponent(y,2**(k-2-i),p)
+		    case b
+			when 1 #do nothing, everything ok
+			when p-1 # -1
+			    x = (x*z) % p
+			    y = (y*z*z) % p
+			else
+			    raise "b = #{b}, which is very odd" unless b == -1    			    
+		    end 
+		    z = (z*z) % p
 		end
+		return x % p
 	end
 	def gcd(y)
 		return self.abs.gcd(y.abs) if self<0 or y<0
@@ -250,6 +302,7 @@ end
 class Float
 	def sqrt
 		#basic newton-raphson
+		raise "trying to sqrt the negative number #{self}" if self < 0
 		old = 0.0
 		new = self
 		while (new-old).abs > 0.000001
@@ -277,7 +330,10 @@ end
 def choice_with_repetitions(n,k)
 	choose(n+k-1,k)
 end
-
+# (1..4*n).reject{|a| a.gcd(4*n) != 1}.find_all{|a| puts "(#{-4*n}/#{a})=#{compute_jacobi_symbol(-4*n,a)==1}"}
+# puts compute_jacobi_symbol(-1,9)
+# # puts compute_jacobi_symbol(3,7)
+# puts 300.to_s_factored
 # prime = 17
 # num = 13
 # s=num.sqrt_modulo_p(prime)

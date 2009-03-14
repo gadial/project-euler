@@ -7,27 +7,51 @@
 
 #can be reduced to finding p>=q>0 such that r=(pq-1)/(p+q) is integer (and then the Alexandrian number is pqr).
 
-#p and q cannot both be even
+#This can be reduced to the following: given p, find all the q's such that (p+q) divides p^2+1
+
 target = 150000
-max = 250000
-count = 0
-p,q=2,1
+max = 200000
+# target = 6
+# max = 100
 nums = []
+p  = 1
 while nums.length < max
-# while count < max
-    if (p*q-1) % (p+q) == 0
-        r = (p*q-1) / (p+q)
-        # puts "p=#{p}, q=#{q}, r=#{r}"
-        nums << p*q*r
-        puts nums.length
-        # count +=1
-        # puts count
-    end
-    q += 1
-    if q>p
-        q = 1
-        p += 1
-    end
+	p +=1 
+	t = p**2 + 1
+	(2..p).each do |k| 
+	    if t % k == 0
+		q = (t / k) - p
+		r = (p*q-1) / (p+q)
+# 		puts "p=#{p}, q=#{q}, r=#{r}, pqr = #{p*q*r}"
+		nums << p*q*r
+		nums.uniq!
+		puts nums.length
+	    end
+	end
 end
-File.open("temp","w"){|file| file.write(nums.inspect)}
-puts nums.sort[target-1]
+
+# File.open("temp","w"){|file| file.write(nums.inspect)}
+puts nums.uniq.sort[target-1]
+# puts nums.uniq.sort.inspect
+
+# count = 0
+# p,q=2,1
+# nums = []
+# while nums.length < max
+# # while count < max
+#     if (p*q-1) % (p+q) == 0
+#         r = (p*q-1) / (p+q)
+#         # puts "p=#{p}, q=#{q}, r=#{r}"
+#         nums << p*q*r
+#         puts nums.length
+#         # count +=1
+#         # puts count
+#     end
+#     q += 1
+#     if q>p
+#         q = 1
+#         p += 1
+#     end
+# end
+# File.open("temp","w"){|file| file.write(nums.inspect)}
+# puts nums.sort[target-1]

@@ -18,4 +18,15 @@ class IntegerTests < Test::Unit::TestCase
 		assert_equal(gcd, a.gcd(b))
 		assert_equal(a*x+b*y,gcd)
 	end
+	def test_sqrt_modulo_p
+	    primes = [3,5,7,11,13,17,19,23]
+	    primes.each do |p|
+		(1...p).each do |x| 
+		    square = (x**2) % p
+		    root = square.sqrt_modulo_p(p)
+		    root_squared = (root**2) % p
+		    assert_equal(square, root_squared)
+		end
+	    end
+	end
 end
