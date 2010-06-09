@@ -30,3 +30,12 @@ class IntegerTests < Test::Unit::TestCase
 	    end
 	end
 end
+
+class HypothesisTests < Test::Unit::TestCase
+	def test_mersanne_numbers_relatively_prime
+		100.times do
+			a,b = rand(1000),rand(1000)
+			assert_equal(2**a.gcd(b)-1,(2**a-1).gcd(2**b-1))
+		end
+	end
+end

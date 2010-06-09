@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX 20000000
+#define MAX 40000000
 int main(){
   int i,j;
   int* nums;

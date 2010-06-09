@@ -8,8 +8,6 @@
 # Find f(1,000,000,000,000)
 require 'common'
 
-n = 10**5
-x = 10**12
-
+n = 10**7
 
 puts 30.factorial

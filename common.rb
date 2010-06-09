@@ -1,5 +1,19 @@
 # $Primes = File.open("primes.txt","r"){|file| file.read.split("\n").collect{|p| p.to_i}}
 
+def sieve_primes(max)
+	divided = []
+	primes = []
+	(2..max).each do |n|
+		primes << n if divided[n] == nil
+		temp = n
+		while temp <= max
+			temp += n
+			divided[temp] = true
+		end
+	end
+	return primes
+end
+
 def solve_equation(a,b,c)
 	(-b + (b**2 - 4*a*c).sqrt) / (2*a)
 end
@@ -7,6 +21,7 @@ end
 def compute_jacobi_symbol(a,b)
 #     puts "(#{a}/#{b})"
     raise "b=#{b} must be odd" unless b.odd?
+    return 0 if a ==0
     return 1 if a == 1
     return 1 if b == 1
     return compute_jacobi_symbol(-a,b)*((b % 4 == 1)?(1):(-1)) if a < 0
@@ -173,14 +188,15 @@ class Integer
 		end
 		return new
 	end
-	def integer_sqrt
+	def integer_sqrt(approx = false)
+		return 1 if self == 1
 		x = self
 		y = x - 1
 		while y < x
 			x = y
 			y = (x + (self / x)) / 2
 		end
-		return nil unless y**2 == self
+		return nil unless y**2 == self or approx==true
 		return y
 # 	    #binary search
 # 	    lb = 1
@@ -196,7 +212,7 @@ class Integer
 # 	    return nil
 		
 	end
-	def sqrt_modulo_p(p, assured_to_be_qr = false)
+	def sqrt_modulo_p(p, assured_to_be_qr = false, non_qr = nil)
 		#p is an odd prime
 		raise "#{self} is not a quadratic residue modulo #{p}" unless assured_to_be_qr or fast_modular_exponent(self, (p-1) / 2,p) == 1
 		return fast_modular_exponent(self, (p+1) / 4, p) if (p % 4) == 3 #the simple case
@@ -205,8 +221,7 @@ class Integer
 			return 2*self*fast_modular_exponent(4*self, (p-5) / 8, p)
 		end
 # 		# p = 1 mod 8; we use Tonelli and Shanks
- 		non_qr = nil
- 		20.times {t = rand(p-2)+2; if not t.qr_modulo?(p) then non_qr = t; break end}
+		20.times {t = rand(p-2)+2; if not t.qr_modulo?(p) then non_qr = t; break end} if non_qr == nil
 		raise "could not find a non quadratic residue modulo #{p}" if non_qr == nil
 
 		#now writing p-1 as p-1=2^k*t where t is odd
@@ -216,17 +231,23 @@ class Integer
 			k += 1
 			temp /= 2
 		end
+		
 		t = temp
+		puts "qnr = #{non_qr}"
+		puts "k, t = #{k}, #{t}"
 		z = fast_modular_exponent(non_qr, t, p)
+		puts "z = #{z}"
 		#finished the "pre-processing", turning to deal with self
 # 		puts "p=#{p}, p-1 = 2^#{k}*#{t}"
 		
 		y = fast_modular_exponent(self, t, p)
 		x = fast_modular_exponent(self, (t+1) / 2, p)
-		
+		puts "x, y = #{x}, #{y}"
 # 		puts "self = #{self}, y = #{y}, x = #{x}"
 		(0..k-1).each do |i|
+		    puts "exp = #{2**(k-2-i)}"
 		    b = fast_modular_exponent(y,2**(k-2-i),p)
+		    puts "i, b = #{i}, #{b}"
 		    case b
 			when 1 #do nothing, everything ok
 			when p-1 # -1
@@ -236,6 +257,7 @@ class Integer
 			    raise "b = #{b}, which is very odd" unless b == -1    			    
 		    end 
 		    z = (z*z) % p
+		    puts "x, y, z = #{x}, #{y}, #{z}"
 		end
 		return x % p
 	end
@@ -330,6 +352,9 @@ end
 def choice_with_repetitions(n,k)
 	choose(n+k-1,k)
 end
+# puts compute_jacobi_symbol(141,1033)
+# puts 135.sqrt_modulo_p(833)
+
 # (1..4*n).reject{|a| a.gcd(4*n) != 1}.find_all{|a| puts "(#{-4*n}/#{a})=#{compute_jacobi_symbol(-4*n,a)==1}"}
 # puts compute_jacobi_symbol(-1,9)
 # # puts compute_jacobi_symbol(3,7)

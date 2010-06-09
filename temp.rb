@@ -1,13 +1,18 @@
 require 'common'
-require 'miller-rabin'
 class Integer
-	def totient
-		prime_divisors.uniq.inject(self.to_f){|prod, p| prod * (1-(1.to_f / p))}.to_i
-	end
-	def is_permutation_of?(other)
-		digits.sort == other.digits.sort
-	end
+  def prime?
+    (2...self).each{|x| return false if (self % x) == 0}
+    true
+  end
 end
 
-puts 18 / 18.totient
-puts 6 / 6.totient
+range = 50
+
+# 100.times do
+#   x,y,d = rand(range), rand(range), rand(range)
+#   next unless (x**2+d*y**2) % 4 == 0
+#   p = (x**2+d*y**2) / 4
+#   puts "x=#{x}, y=#{y}, d=#{d}, p=#{p}" if p.prime?
+# end
+
+puts compute_jacobi_symbol(-43,

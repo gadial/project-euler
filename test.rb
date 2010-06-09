@@ -1,12 +1,8 @@
-require 'mathn'
-numbers = []
-current = 5
-8000.times {numbers << current; current += 2; numbers << current; current += 4}
-# puts numbers.inspect
+require 'common'
 
-t = Prime.new
-p=t.next
-while p < numbers.max
-    puts p if not numbers.include?(p)
-    p = t.next
-end
+n = 387
+# a = 155
+a = 170
+puts n.gcd(a)
+puts compute_jacobi_symbol(a,n)
+puts fast_modular_exponent(a,(n-1)/2, n)
